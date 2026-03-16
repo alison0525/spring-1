@@ -1,0 +1,72 @@
+package com.back.domain.post.entity;
+
+
+import com.back.domain.comment.entity.Comment;
+import com.back.global.entity.BaseEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Entity
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+public class Post extends BaseEntity {
+
+    private String title;
+    private String content;
+
+    @OneToMany(mappedBy = "post",
+            cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
+            fetch = FetchType.LAZY,
+            orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    public Post(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+
+
+    public void update(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+
+
+    //댓글 추가
+    public Comment addComment(String content){
+        Comment comment = new Comment(content, this);
+        comments.add(comment);
+        return comment;
+    }
+    //댓글 조회
+    public Optional<Comment> findCommentById(int commentId){
+        return comments.stream()
+                .filter((c)->c.getId() == commentId)
+                .findFirst();
+    }
+    //댓글 삭제
+    public void deleteComment(int commentId){
+        Comment comment = findCommentById(commentId).get();
+        comments.remove(comment);
+    }
+
+    public void modifyComment(int commentId, String content){
+        Comment comment = findCommentById(commentId).get();
+        comment.update(content);
+    }
+
+    /*//dto변환 메서드
+    public static PostDto toDto(Post p){
+        return new PostDto(p.getId(),p.getTitle(), p.getContent(), p.getCreateDate(),p.getModifyDate());
+    }*/
+}

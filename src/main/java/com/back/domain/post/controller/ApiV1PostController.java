@@ -1,0 +1,113 @@
+package com.back.domain.post.controller;
+
+import com.back.domain.post.dto.PostDto;
+import com.back.domain.post.entity.Post;
+import com.back.domain.post.service.PostService;
+import com.back.global.rsData.RsData;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/posts")
+@Tag(name = "ApiV1PostController", description = "글 API")
+public class ApiV1PostController {
+
+    private final PostService postService;
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "글 다건 조회")
+    public List<PostDto> list(){
+        List<Post> result = postService.findAll().reversed();
+
+        List<PostDto> postDtoList = result.stream()
+                .map(PostDto::new)
+                .toList();
+        return postDtoList;
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "글 단건 조회")
+    public PostDto detail(@PathVariable("id") int id){
+        Post post = postService.findById(id).get();
+        return new PostDto(post);
+    }
+
+    record PostWriteBody(
+            @Size(min = 2, max = 10, message = "03-title-제목은 2자 이상 10자 이하로 입력해주세요.")
+            @NotBlank(message = "01-title-제목은 필수입니다.")
+            String title,
+
+            @NotBlank(message = "02-content-내용은 필수입니다.")
+            @Size(min = 2, max = 100, message = "04-content-내용은 2자 이상 100자 이하로 입력해주세요.")
+            String content
+    ){}
+
+    record PostWriteResBody(
+            PostDto postDto
+    ){}
+
+    @PostMapping
+    @Operation(summary = "글 작성")
+    public RsData<PostWriteResBody> write(@RequestBody @Valid PostWriteBody reqBody){
+        Post post = postService.write(reqBody.title, reqBody.content);
+
+        return new RsData<>(
+                "%d번 글이 작성되었습니다.".formatted(post.getId()),
+                "201-1",
+                new PostWriteResBody(
+                        new PostDto(post)
+                )
+        );
+
+    }
+
+    record PostModifyBody(
+            @Size(min = 2, max = 10, message = "03-title-제목은 2자 이상 10자 이하로 입력해주세요.")
+            @NotBlank(message = "01-title-제목은 필수입니다.")
+            String title,
+
+            @NotBlank(message = "02-content-내용은 필수입니다.")
+            @Size(min = 2, max = 100, message = "04-content-내용은 2자 이상 100자 이하로 입력해주세요.")
+            String content
+    ){}
+
+    record PostModifyResBody(
+            PostDto postDto
+    ){}
+
+    @Operation(summary = "글 수정")
+    @PutMapping("/{postId}")
+    public RsData<PostModifyResBody> modify(@RequestBody @Valid PostModifyBody postModifyBody, @PathVariable int postId){
+        Post post = postService.modify(postId, postModifyBody.title, postModifyBody.content);
+        return new RsData<>(
+                "%d번 글이 수정되었습니다.".formatted(post.getId()),
+                "200-1",
+                new PostModifyResBody(
+                        new PostDto(post)
+                )
+        );
+    }
+
+    @Operation(summary = "글 삭제")
+    @DeleteMapping("/{postId}")
+    public RsData<Void> delete(
+            @PathVariable int postId
+    ){
+        Post post = postService.findById(postId).get();
+        postService.deleteById(postId);
+
+        return new RsData<>(
+                "%d번 글이 삭제되었습니다.".formatted(postId),
+                "200-1"
+        );
+    }
+}
