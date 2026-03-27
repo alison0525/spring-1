@@ -63,13 +63,12 @@ public class ApiV1PostController {
     @Operation(summary = "글 작성")
     public RsData<PostWriteResBody> write(
             @RequestBody @Valid PostWriteBody reqBody,
-            @RequestParam @NotBlank @Size(min = 2, max = 30) String username,
-            @RequestParam @NotBlank @Size(min = 2, max = 30) String password
+            @RequestParam() String apiKey
     ){
-        Member actor = memberService.findByUsername(username).get();
-        if(!actor.getPassword().equals(password)){
-            throw new ServiceException("401-1","비밀번호가 일치하지 않습니다.");
-        }
+        Member actor = memberService.findByApiKey(apiKey).orElseThrow(
+                ()-> new ServiceException("401-1","유효하지 않은 API 키 입니다.")
+        );
+
         Post post = postService.write(actor, reqBody.title, reqBody.content);
 
         return new RsData<>(
