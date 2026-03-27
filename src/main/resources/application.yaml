@@ -8,7 +8,7 @@ spring:
     ansi:
       enabled: always
   mvc:
-    hiddenmethod:
+    hiddenethod:
       filter:
         enabled: true
   jpa:
