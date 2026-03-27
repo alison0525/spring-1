@@ -1,5 +1,7 @@
 package com.back.domain.post.controller;
 
+import com.back.domain.member.entity.Member;
+import com.back.domain.member.service.MemberService;
 import com.back.domain.post.dto.PostDto;
 import com.back.domain.post.entity.Post;
 import com.back.domain.post.service.PostService;
@@ -22,6 +24,7 @@ import java.util.List;
 public class ApiV1PostController {
 
     private final PostService postService;
+    private final MemberService memberService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "글 다건 조회")
@@ -58,7 +61,8 @@ public class ApiV1PostController {
     @PostMapping
     @Operation(summary = "글 작성")
     public RsData<PostWriteResBody> write(@RequestBody @Valid PostWriteBody reqBody){
-        Post post = postService.write(reqBody.title, reqBody.content);
+        Member actor = memberService.findByUsername("user1").get();
+        Post post = postService.write(actor, reqBody.title, reqBody.content);
 
         return new RsData<>(
                 "%d번 글이 작성되었습니다.".formatted(post.getId()),
