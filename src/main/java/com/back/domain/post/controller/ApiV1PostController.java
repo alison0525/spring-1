@@ -5,6 +5,7 @@ import com.back.domain.member.service.MemberService;
 import com.back.domain.post.dto.PostDto;
 import com.back.domain.post.entity.Post;
 import com.back.domain.post.service.PostService;
+import com.back.global.exception.ServiceException;
 import com.back.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -67,7 +68,7 @@ public class ApiV1PostController {
     ){
         Member actor = memberService.findByUsername(username).get();
         if(!actor.getPassword().equals(password)){
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new ServiceException("401-1","비밀번호가 일치하지 않습니다.");
         }
         Post post = postService.write(actor, reqBody.title, reqBody.content);
 
