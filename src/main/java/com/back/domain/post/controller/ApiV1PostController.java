@@ -63,8 +63,11 @@ public class ApiV1PostController {
     @Operation(summary = "글 작성")
     public RsData<PostWriteResBody> write(
             @RequestBody @Valid PostWriteBody reqBody,
-            @RequestParam() String apiKey
+            @RequestHeader("Authorization") String apiKey
     ){
+
+        apiKey = apiKey.replace("Bearer ", "");
+
         Member actor = memberService.findByApiKey(apiKey).orElseThrow(
                 ()-> new ServiceException("401-1","유효하지 않은 API 키 입니다.")
         );
