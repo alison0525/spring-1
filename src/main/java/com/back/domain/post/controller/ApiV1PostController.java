@@ -4,7 +4,6 @@ import com.back.domain.member.entity.Member;
 import com.back.domain.post.dto.PostDto;
 import com.back.domain.post.entity.Post;
 import com.back.domain.post.service.PostService;
-import com.back.global.exception.ServiceException;
 import com.back.global.rq.Rq;
 import com.back.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
@@ -62,13 +61,10 @@ public class ApiV1PostController {
     @PostMapping
     @Operation(summary = "글 작성")
     public RsData<PostWriteResBody> write(
-            @RequestBody @Valid PostWriteBody reqBody,
-            @RequestHeader("Authorization") String apiKey
+            @RequestBody @Valid PostWriteBody reqBody
     ){
 
         Member actor = rq.getActor();
-
-        apiKey = apiKey.replace("Bearer ", "");
 
         Post post = postService.write(actor, reqBody.title, reqBody.content);
 
@@ -102,17 +98,12 @@ public class ApiV1PostController {
     @PutMapping("/{id}")
     public RsData<PostModifyResBody> modify(
             @RequestBody @Valid PostModifyReqBody reqBody,
-            @RequestHeader("Authorization") String apiKey,
             @PathVariable int id
     ){
         Member actor = rq.getActor();
 
         Post post = postService.findById(id).get();
-
-        if (!actor.equals(post.getAuthor())) {
-            throw new ServiceException("403-1", "수정 권한이 없습니다.");
-        }
-
+        post.checkModify(actor);
 
         postService.modify(id, reqBody.title, reqBody.content);
 
@@ -128,16 +119,12 @@ public class ApiV1PostController {
     @Operation(summary = "글 삭제")
     @DeleteMapping("/{postId}")
     public RsData<Void> delete(
-            @RequestHeader("Authorization") String apiKey,
             @PathVariable int postId
     ){
         Member actor = rq.getActor();
 
         Post post = postService.findById(postId).get();
-
-        if (!actor.equals(post.getAuthor())) {
-            throw new ServiceException("403-1", "삭제 권한이 없습니다.");
-        }
+        post.checkDelete(actor);
 
         postService.deleteById(postId);
 
