@@ -7,13 +7,11 @@ import com.back.global.exception.ServiceException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.annotation.RequestScope;
 
 @Component
-@RequestScope // 각 HTTP 요청 마다 새로은 객체가 생성되고 요젗이 끝나면 소멸되어야함
 @RequiredArgsConstructor
 public class Rq {
-    private final HttpServletRequest request;
+    private final HttpServletRequest request; // 프록시 객체
     private final MemberService memberService;
 
     public Member getActor() {
