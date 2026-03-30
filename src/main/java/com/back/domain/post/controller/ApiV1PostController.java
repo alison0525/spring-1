@@ -84,7 +84,7 @@ public class ApiV1PostController {
 
     }
 
-    record PostModifyBody(
+    record PostModifyReqBody(
             @Size(min = 2, max = 10, message = "03-title-제목은 2자 이상 10자 이하로 입력해주세요.")
             @NotBlank(message = "01-title-제목은 필수입니다.")
             String title,
@@ -92,18 +92,38 @@ public class ApiV1PostController {
             @NotBlank(message = "02-content-내용은 필수입니다.")
             @Size(min = 2, max = 100, message = "04-content-내용은 2자 이상 100자 이하로 입력해주세요.")
             String content
-    ){}
+    ) {
+    }
 
     record PostModifyResBody(
             PostDto postDto
-    ){}
+    ) {
+    }
 
     @Operation(summary = "글 수정")
-    @PutMapping("/{postId}")
-    public RsData<PostModifyResBody> modify(@RequestBody @Valid PostModifyBody postModifyBody, @PathVariable int postId){
-        Post post = postService.modify(postId, postModifyBody.title, postModifyBody.content);
+    @PutMapping("/{id}")
+    public RsData<PostModifyResBody> modify(
+            @RequestBody @Valid PostModifyReqBody reqBody,
+            @RequestHeader("Authorization") String apiKey,
+            @PathVariable int id
+    ){
+        apiKey = apiKey.replace("Bearer ", "");
+
+        Member actor = memberService.findByApiKey(apiKey).orElseThrow(
+                () -> new ServiceException("401-1", "유효하지 않은 API 키입니다.")
+        );
+
+        Post post = postService.findById(id).get();
+
+        if (!actor.equals(post.getAuthor())) {
+            throw new ServiceException("403-1", "수정 권한이 없습니다.");
+        }
+
+
+        postService.modify(id, reqBody.title, reqBody.content);
+
         return new RsData<>(
-                "%d번 글이 수정되었습니다.".formatted(post.getId()),
+                "%d번 게시물이 수정되었습니다.".formatted(post.getId()),
                 "200-1",
                 new PostModifyResBody(
                         new PostDto(post)
@@ -114,9 +134,21 @@ public class ApiV1PostController {
     @Operation(summary = "글 삭제")
     @DeleteMapping("/{postId}")
     public RsData<Void> delete(
+            @RequestHeader("Authorization") String apiKey,
             @PathVariable int postId
     ){
+        apiKey = apiKey.replace("Bearer ", "");
+
+        Member actor = memberService.findByApiKey(apiKey).orElseThrow(
+                () -> new ServiceException("401-1", "유효하지 않은 API 키입니다.")
+        );
+
         Post post = postService.findById(postId).get();
+
+        if (!actor.equals(post.getAuthor())) {
+            throw new ServiceException("403-1", "삭제 권한이 없습니다.");
+        }
+
         postService.deleteById(postId);
 
         return new RsData<>(
