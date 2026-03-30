@@ -120,7 +120,7 @@ public class ApiV1PostControllerTest {
     }
 
     @Test
-    @DisplayName("글 생성")
+    @DisplayName("글 작성")
     void t4() throws Exception {
         String title = "제목입니다";
         String content = "내용입니다";
@@ -129,7 +129,7 @@ public class ApiV1PostControllerTest {
         ResultActions resultActions = mvc
                 .perform(
                         post("/api/v1/posts")
-                                .header("Authorization", apiKey)
+                                .header("Authorization", "Bearer %s".formatted(apiKey))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
@@ -246,7 +246,7 @@ public class ApiV1PostControllerTest {
         ResultActions resultActions = mvc
                 .perform(
                         put("/api/v1/posts/%d".formatted(targetId))
-                                .header("Authorization", apiKey)
+                                .header("Authorization", "Bearer %s".formatted(apiKey))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
@@ -282,7 +282,7 @@ public class ApiV1PostControllerTest {
         ResultActions resultActions = mvc
                 .perform(
                         delete("/api/v1/posts/%d".formatted(targetId))
-                        .header("Authorization", apiKey)
+                        .header("Authorization", "Bearer %s".formatted(apiKey))
                 ).andDo(print());
 
         resultActions
