@@ -18,8 +18,14 @@ public class Rq {
     private final MemberService memberService;
 
     public void addCookie(String name, String value){
+
+        Cookie cookie = new Cookie(name, value);
+        cookie.setPath("/");//모든 경로에서 접근 가능
+        cookie.setHttpOnly(true);//xss 방지
+        cookie.setDomain("localhost");//로컬호스트 도메인에서만 가능
+
         response.addCookie(
-                new Cookie(name, value)
+                cookie
         );
     }
 
