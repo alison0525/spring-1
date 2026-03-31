@@ -63,4 +63,13 @@ public class Rq {
                 ()-> new ServiceException("401-1","유효하지 않은 API 키 입니다.")
         );
     }
+
+    public void deleteCookie(String name) {
+        Cookie cookie = new Cookie(name,"");
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setDomain("localhost");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
 }
