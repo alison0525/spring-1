@@ -7,6 +7,7 @@ import com.back.domain.post.service.PostService;
 import com.back.global.rq.Rq;
 import com.back.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -21,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/posts")
 @Tag(name = "ApiV1PostController", description = "글 API")
+@SecurityRequirement(name = "bearerAuth")
 public class ApiV1PostController {
 
     private final PostService postService;
