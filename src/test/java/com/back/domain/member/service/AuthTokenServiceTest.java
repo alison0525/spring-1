@@ -1,8 +1,7 @@
-package com.back.domain.post.member.service;
+package com.back.domain.member.service;
 
 import com.back.domain.member.entity.Member;
 import com.back.domain.member.repository.MemberRepository;
-import com.back.domain.member.service.AuthTokenService;
 import com.back.standard.Ut.Ut;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,10 +17,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-public class AuthTokenServiceTest {
+class AuthTokenServiceTest {
 
     @Autowired
     private AuthTokenService authTokenService;
+
     @Autowired
     private MemberRepository memberRepository;
 
@@ -43,7 +43,7 @@ public class AuthTokenServiceTest {
 
 
         String jwt = Ut.jwt.toString(secretPattern, expireSeconds, payload);
-        Map<String, Object> parsedPayload = Ut.jwt.payload(jwt, secretPattern);
+        Map<String, Object> parsedPayload = Ut.jwt.payloadOrNull(jwt, secretPattern);
 
         assertThat(parsedPayload)
                 .containsAllEntriesOf(payload);
@@ -78,6 +78,17 @@ public class AuthTokenServiceTest {
         Member member1 = memberRepository.findByUsername("user1").get();
         String accessToken = authTokenService.genAccessToken(member1);
         assertThat(accessToken).isNotBlank();
+
+
+        Map<String, Object> payload = authTokenService.payloadOrNull(accessToken);
+
+        assertThat(payload).containsAllEntriesOf(
+                Map.of(
+                        "id", member1.getId(),
+                        "name", member1.getName()
+                )
+        );
+
 
         System.out.println("accessToken = " + accessToken);
 

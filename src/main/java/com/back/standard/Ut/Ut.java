@@ -25,7 +25,7 @@ public class Ut {
             Date issuedAt = new Date();
             Date expiration = new Date(issuedAt.getTime() + 1000L * expireSeconds);
 
-            Key secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+            Key secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 
             String jwt = Jwts.builder()
                     .claims(claims)
@@ -53,17 +53,19 @@ public class Ut {
             }
         }
 
-        public static Map<String, Object> payload(String jwt, String secretPattern){
+        public static Map<String, Object> payloadOrNull(String jwt, String secretPattern){
             byte[] keyBytes = secretPattern.getBytes(StandardCharsets.UTF_8);
             SecretKey secretKey = Keys.hmacShaKeyFor(keyBytes);
-
-            return (Map<String, Object>) Jwts
+            if(isValid(jwt, secretPattern)){
+                return (Map<String, Object>) Jwts
                         .parser()
                         .verifyWith(secretKey)
                         .build()
                         .parse(jwt)
                         .getPayload();
+            }
 
+            return null;
         }
     }
 }
