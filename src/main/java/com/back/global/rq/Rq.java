@@ -52,8 +52,8 @@ public class Rq {
 
             if (payload != null) {
                 int id = (int) payload.get("id");
-                member = memberService.findById(id)
-                        .orElseThrow(() -> new ServiceException("401-3", "accessToken의 id에 해당하는 회원이 존재하지 않습니다."));
+                String name = (String) payload.get("name");
+                member = new Member(id, name);
             }
         }
         //accessToken으로 인증이 제대로 이루어지지 않은 경우
