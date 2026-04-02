@@ -4,6 +4,7 @@ import com.back.domain.member.entity.Member;
 import com.back.domain.member.repository.MemberRepository;
 import com.back.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.UUID;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final AuthTokenService authTokenService;
+    private final PasswordEncoder passwordEncoder;
 
     public Member join(String username, String password, String nickname, String apiKey){
         findByUsername(username).ifPresent(
@@ -24,7 +26,7 @@ public class MemberService {
                 }
         );
 
-        Member member = new Member(username, password, nickname, apiKey);
+        Member member = new Member(username, passwordEncoder.encode(password), nickname, apiKey);
         return memberRepository.save(member);
     }
 
@@ -59,5 +61,11 @@ public class MemberService {
 
     public List<Member> findAll() {
         return memberRepository.findAll();
+    }
+
+    public void checkPassword(String rawPassword, String enCodedPassword) {
+        if(!passwordEncoder.matches(rawPassword, enCodedPassword)) {
+            throw new ServiceException("401-2", "비밀번호가 일치하지 않습니다.");
+        }
     }
 }
