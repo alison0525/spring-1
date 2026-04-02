@@ -21,7 +21,8 @@ class AuthTokenService {
                 expireTime,
                 Map.of(
                         "id", member.getId(),
-                        "username", member.getUsername()
+                        "username", member.getUsername(),
+                        "nickname", member.getName()
                 )
         );
     }

@@ -70,9 +70,8 @@ public class ApiV1PostController {
 
         Member actor = rq.getActor();
 
-        Member author = memberService.findById(actor.getId()).get();
 
-        Post post = postService.write(author, reqBody.title, reqBody.content);
+        Post post = postService.write(actor, reqBody.title, reqBody.content);
 
         return new RsData<>(
                 "%d번 글이 작성되었습니다.".formatted(post.getId()),
