@@ -1,6 +1,7 @@
 package com.back.domain.post.controller;
 
 import com.back.domain.member.entity.Member;
+import com.back.domain.member.service.MemberService;
 import com.back.domain.post.dto.PostDto;
 import com.back.domain.post.entity.Post;
 import com.back.domain.post.service.PostService;
@@ -27,6 +28,7 @@ public class ApiV1PostController {
 
     private final PostService postService;
     private final Rq rq;
+    private final MemberService memberService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "글 다건 조회")
@@ -68,7 +70,9 @@ public class ApiV1PostController {
 
         Member actor = rq.getActor();
 
-        Post post = postService.write(actor, reqBody.title, reqBody.content);
+        Member author = memberService.findById(actor.getId()).get();
+
+        Post post = postService.write(author, reqBody.title, reqBody.content);
 
         return new RsData<>(
                 "%d번 글이 작성되었습니다.".formatted(post.getId()),
