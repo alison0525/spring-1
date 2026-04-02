@@ -1,7 +1,9 @@
-package com.back.domain.member.controller;
+package com.back.domain.post.post.controller;
 
 import com.back.domain.member.entity.Member;
 import com.back.domain.member.repository.MemberRepository;
+import com.back.domain.post.controller.ApiV1AdmPostController;
+import com.back.domain.post.repository.PostRepository;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,8 +14,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.hamcrest.Matchers.containsInRelativeOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -22,57 +22,59 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
-public class ApiV1AdmMemberControllerTest {
+public class ApiV1AdmPostControllerTest {
 
     @Autowired
     private MockMvc mvc;
 
     @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
     private MemberRepository memberRepository;
 
     @Test
-    @DisplayName("회원 다건 조회")
+    @DisplayName("글 전체 개수 조회, count")
     void t1() throws Exception {
+
+        Member actor = memberRepository.findByUsername("admin").get();
 
         ResultActions resultActions = mvc
                 .perform(
-                        get("/api/v1/adm/members")
+                        get("/api/v1/adm/posts/count")
+                                .cookie(new Cookie("apiKey", actor.getApiKey()))
                 )
                 .andDo(print());
 
-        resultActions
-                .andExpect(handler().handlerType(ApiV1AdmMemberController.class))
-                .andExpect(handler().methodName("list"))
-                .andExpect(status().isOk());
+
+        long count = postRepository.count();
 
         resultActions
-                .andExpect(jsonPath("$.length()").value(5))
-                .andExpect(jsonPath("$[*].id", containsInRelativeOrder(1, 5)))
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].createDate").exists())
-                .andExpect(jsonPath("$[0].modifyDate").exists())
-                .andExpect(jsonPath("$[0].nickname").value("시스템"))
-                .andExpect(jsonPath("$[0].username").value("system"));
+                .andExpect(handler().handlerType(ApiV1AdmPostController.class))
+                .andExpect(handler().methodName("count"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalCount").value(count));
     }
 
     @Test
-    @DisplayName("회원 다건 조회, 권한이 없는 경우")
+    @DisplayName("글 전체 개수 조회, count, 권한이 없는 경우")
     void t2() throws Exception {
 
         Member actor = memberRepository.findByUsername("user1").get();
 
         ResultActions resultActions = mvc
                 .perform(
-                        get("/api/v1/adm/members")
+                        get("/api/v1/adm/posts/count")
                                 .cookie(new Cookie("apiKey", actor.getApiKey()))
                 )
                 .andDo(print());
 
         resultActions
-                .andExpect(handler().handlerType(ApiV1AdmMemberController.class))
-                .andExpect(handler().methodName("list"))
+                .andExpect(handler().handlerType(ApiV1AdmPostController.class))
+                .andExpect(handler().methodName("count"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.resultCode").value("403-1"))
                 .andExpect(jsonPath("$.msg").value("권한이 없습니다"));
+
     }
 }
