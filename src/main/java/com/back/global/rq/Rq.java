@@ -3,10 +3,13 @@ package com.back.global.rq;
 
 import com.back.domain.member.entity.Member;
 import com.back.domain.member.service.MemberService;
+import com.back.global.security.SecurityUser;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -20,7 +23,9 @@ public class Rq {
     private final MemberService memberService;
 
     public Member getActor() {
-        return new Member(3, "user1", "유저1");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        SecurityUser securityUser =  (SecurityUser) authentication.getPrincipal();
+        return new Member(securityUser.getId(), securityUser.getUsername(), securityUser.getNickname());
     }
 
 
