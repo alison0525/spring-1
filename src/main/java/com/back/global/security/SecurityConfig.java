@@ -26,6 +26,7 @@ public class SecurityConfig {
                                 "/api/*/posts/{postId:\\d+}/comments", "/api/*/posts/{postId:\\d+}/comments/{commentId:\\d+}").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/members/login", "/api/v1/members/join").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/members/logout").permitAll()
+                        .requestMatchers("/api/v1/adm/**").hasRole("ADMIN")
                         .requestMatchers("/api/*/**").authenticated()
                         .anyRequest().authenticated())
                 .csrf((csrf) -> csrf.disable())

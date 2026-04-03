@@ -124,7 +124,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
                member.getUsername(),
                member.getPassword(),
                member.getNickname(),
-               List.of()//권한 설정
+               member.getAuthorities()
        );
 
        Authentication authentication = new UsernamePasswordAuthenticationToken(
