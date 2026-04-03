@@ -39,6 +39,8 @@ public class Rq {
         cookie.setPath("/");//모든 경로에서 접근 가능
         cookie.setHttpOnly(true);//xss 방지
         cookie.setDomain("localhost");//로컬호스트 도메인에서만 가능
+        cookie.setSecure(true); // http x https o
+        cookie.setAttribute("SameSite", "Strict");
 
         response.addCookie(
                 cookie
