@@ -31,6 +31,7 @@ logging:
     org.hibernate.orm.jdbc.bind: TRACE
     org.hibernate.orm.jdbc.extract: TRACE
     org.springframework.transaction.interceptor: TRACE
+    com.back: DEBUG
 
 #사용자 정의 설정 변수
 custom:

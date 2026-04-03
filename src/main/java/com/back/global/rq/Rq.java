@@ -3,7 +3,6 @@ package com.back.global.rq;
 
 import com.back.domain.member.entity.Member;
 import com.back.domain.member.service.MemberService;
-import com.back.global.exception.ServiceException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -22,64 +20,11 @@ public class Rq {
     private final MemberService memberService;
 
     public Member getActor() {
-
-        String authorizationHeader = getHeader("Authorization", "");
-        String apiKey ;
-        String accessToken;
-
-        //헤더 방식
-        if(!authorizationHeader.isBlank()){
-            if(!authorizationHeader.startsWith("Bearer ")){
-                throw new ServiceException("401-2","잘못된 형식의 인증 데이터입니다.");
-            }
-            String[] headerAuthorizationBits = authorizationHeader.split(" ", 3);
-            apiKey = headerAuthorizationBits[1];
-            accessToken = headerAuthorizationBits.length == 3 ? headerAuthorizationBits[2] : "";
-
-        }else{
-            //쿠키 방식
-            apiKey = getCookieValue("apiKey", "");
-            accessToken = getCookieValue("accessToken", "");
-        }
-
-        Member member = null;
-
-        boolean isAccessTokenExists = !accessToken.isBlank();
-        boolean isAccessTokenValid = false;
-
-        if (apiKey.isBlank())
-            throw new ServiceException("401-1", "apiKey가 존재하지 않습니다.");
-
-        if (isAccessTokenExists) {
-            Map<String, Object> payload = memberService.payloadOrNull(accessToken);
-
-            if (payload != null) {
-                int id = (int) payload.get("id");
-                String username = (String) payload.get("username");
-                String nickname = (String) payload.get("nickname");
-                member = new Member(id, username,nickname);
-                isAccessTokenValid = true;
-            }
-        }
-        //accessToken으로 인증이 제대로 이루어지지 않은 경우
-        if (member == null) {
-            member = memberService
-                    .findByApiKey(apiKey)
-                    .orElseThrow(() -> new ServiceException("401-4", "API 키가 유효하지 않습니다."));
-        }
-
-        if (isAccessTokenExists && !isAccessTokenValid) {
-            String newAccessToken = memberService.genAccessToken(member);
-            addCookie("accessToken", newAccessToken);
-            setHeader("accessToken", newAccessToken);
-        }
-
-
-        return member;
+        return new Member(3, "user1", "유저1");
     }
 
 
-    private void setHeader(String name, String value) {
+    public void setHeader(String name, String value) {
         response.setHeader(name, value);
     }
 
@@ -95,14 +40,14 @@ public class Rq {
         );
     }
 
-    private String getHeader(String name, String defaultValue) {
+    public String getHeader(String name, String defaultValue) {
         return Optional
                 .ofNullable(request.getHeader(name))
                 .filter(headerValue -> !headerValue.isBlank())
                 .orElse(defaultValue);
     }
 
-    private String getCookieValue(String name, String defaultValue) {
+    public String getCookieValue(String name, String defaultValue) {
         return Optional
                 .ofNullable(request.getCookies())
                 .flatMap(
